@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Avaliação de Hamburguerias - LOVABLE</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 800px; margin: auto; padding: 20px; background: #f4f4f4; }
+    h1 { text-align: center; }
+    label { display: block; margin-top: 10px; font-weight: bold; }
+    input[type="text"], input[type="number"], select { width: 100%; padding: 8px; margin-top: 5px; }
+    button { margin-top: 20px; padding: 10px 20px; font-size: 16px; cursor: pointer; }
+    .result { margin-top: 30px; }
+    .card { background: white; padding: 15px; margin: 10px 0; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+  </style>
+</head>
+<body>
+
+<h1>🍔 Avaliação de Hamburguerias - LOVABLE 🍟</h1>
+
+<form id="reviewForm">
+  <label for="nome">Nome da hamburgueria:</label>
+  <input type="text" id="nome" required>
+
+  <label>Sabor do hambúrguer:</label>
+  <input type="number" id="hamburguer" min="0" max="10" step="0.1" required>
+
+  <label>Sabor da batata:</label>
+  <input type="number" id="batata" min="0" max="10" step="0.1" required>
+
+  <label>Custo-benefício:</label>
+  <input type="number" id="custo" min="0" max="10" step="0.1" required>
+
+  <label>Satisfação da fome:</label>
+  <input type="number" id="fome" min="0" max="10" step="0.1" required>
+
+  <label>Atendimento:</label>
+  <input type="number" id="atendimento" min="0" max="10" step="0.1" required>
+
+  <label>Houve delivery?</label>
+  <select id="houveDelivery">
+    <option value="nao">Não</option>
+    <option value="sim">Sim</option>
+  </select>
+
+  <div id="deliverySection" style="display:none;">
+    <label>Avaliação do delivery:</label>
+    <input type="number" id="delivery" min="0" max="10" step="0.1">
+  </div>
+
+  <button type="submit">Salvar Avaliação</button>
+</form>
+
+<div class="result" id="resultados">
+  <h2>📋 Avaliações Salvas</h2>
+</div>
+
+<script>
+  const form = document.getElementById('reviewForm');
+  const deliverySelect = document.getElementById('houveDelivery');
+  const deliverySection = document.getElementById('deliverySection');
+  const resultados = document.getElementById('resultados');
+
+  let avaliacoes = [];
+
+  deliverySelect.addEventListener('change', () => {
+    deliverySection.style.display = deliverySelect.value === 'sim' ? 'block' : 'none';
+  });
+
+  form.addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const nome = document.getElementById('nome').value;
+    const hamburguer = parseFloat(document.getElementById('hamburguer').value);
+    const batata = parseFloat(document.getElementById('batata').value);
+    const custo = parseFloat(document.getElementById('custo').value);
+    const fome = parseFloat(document.getElementById('fome').value);
+    const atendimento = parseFloat(document.getElementById('atendimento').value);
+    const houveDelivery = document.getElementById('houveDelivery').value === 'sim';
+    const delivery = houveDelivery ? parseFloat(document.getElementById('delivery').value) : null;
+
+    // pesos
+    const pesos = {
+      hamburguer: 3,
+      batata: 2,
+      custo: 2,
+      fome: 2,
+      atendimento: 1,
+      delivery: houveDelivery ? 1 : 0
+    };
+
+    const totalPeso = pesos.hamburguer + pesos.batata + pesos.custo + pesos.fome + pesos.atendimento + pesos.delivery;
+
+    const somaNotas = hamburguer * pesos.hamburguer +
+                      batata * pesos.batata +
+                      custo * pesos.custo +
+                      fome * pesos.fome +
+                      atendimento * pesos.atendimento +
+                      (houveDelivery ? delivery * pesos.delivery : 0);
+
+    const notaFinal = (somaNotas / totalPeso).toFixed(2);
+
+    // salvar avaliação
+    const avaliacao = {
+      nome,
+      notaFinal,
+      hamburguer,
+      batata,
+      custo,
+      fome,
+      atendimento,
+      delivery: houveDelivery ? delivery : "Não aplicável"
+    };
+
+    avaliacoes.push(avaliacao);
+    avaliacoes.sort((a, b) => b.notaFinal - a.notaFinal);
+
+    form.reset();
+    deliverySection.style.display = 'none';
+    mostrarAvaliacoes();
+  });
+
+  function mostrarAvaliacoes() {
+    const container = document.createElement('div');
+    container.innerHTML = '';
+    resultados.innerHTML = '<h2>📋 Avaliações Salvas</h2>';
+
+    avaliacoes.forEach((a, index) => {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.innerHTML = `
+        <strong>#${index + 1} - ${a.nome}</strong><br>
+        Nota final: <strong>${a.notaFinal}</strong><br>
+        Hambúrguer: ${a.hamburguer}, Batata: ${a.batata}, Custo-benefício: ${a.custo},<br>
+        Fome: ${a.fome}, Atendimento: ${a.atendimento}, Delivery: ${a.delivery}
+      `;
+      resultados.appendChild(card);
+    });
+  }
+</script>
+
+</body>
+</html>
